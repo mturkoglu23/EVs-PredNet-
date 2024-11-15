@@ -15,7 +15,11 @@ month_mapping = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Ju
 veriler['Month_Year'] = veriler.iloc[:, 0].apply(lambda x: str(month_mapping[x.split('-')[0]]) + '.' + x.split('-')[1])
 
 x = veriler[['Month_Year','GP','DP','EP','MRGDPI','TNL','TREP','PPI(BM)','CPI(NV)','NALR']]
-y = veriler['PHEV']
+
+A = veriler['PHEV']
+A1= veriler['BEV']
+A2= veriler['HEV']
+y=(A+A1+A2)/3 #Output
 
 y = y.replace({',': '.'}, regex=True)
 x = x.replace({',': '.'}, regex=True)
@@ -43,8 +47,8 @@ for train_index, test_index in kf.split(X):
     x_test_scaled = scaler.transform(x_test)
 
     cnn_model = Sequential()
-    cnn_model.add(Conv1D(filters=16, kernel_size=3, activation='relu', input_shape=(x_train_scaled.shape[1], 1)))
-    cnn_model.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
+    cnn_model.add(Conv1D(filters=8, kernel_size=3, activation='relu', input_shape=(x_train_scaled.shape[1], 1)))
+    cnn_model.add(Conv1D(filters=16, kernel_size=3, activation='relu'))
     cnn_model.add(MaxPooling1D(pool_size=2))
     cnn_model.add(LSTM(units=50))
     cnn_model.add(Flatten())
@@ -57,7 +61,7 @@ for train_index, test_index in kf.split(X):
     cnn_model.fit(x_train_scaled.reshape((x_train_scaled.shape[0], x_train_scaled.shape[1], 1)), 
               y_train.values, 
               epochs=1000, 
-              batch_size=32, 
+              batch_size=16, 
               verbose=1)
   
     y_cnn_head = cnn_model.predict(x_test_scaled.reshape((x_test_scaled.shape[0], x_test_scaled.shape[1], 1)))
